@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dash Project</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #050608;
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #top-bar {
+      width: 900px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+    }
+
+    #title {
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      font-size: 14px;
+      text-transform: uppercase;
+      color: #9cf;
+    }
+
+    #controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    #controls span.key {
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #333;
+      background: #111;
+      font-size: 11px;
+    }
+
+    #main {
+      display: flex;
+      gap: 14px;
+    }
+
+    #left-panel {
+      width: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .panel {
+      background: #0b0c10;
+      border-radius: 6px;
+      padding: 8px;
+      border: 1px solid #191b22;
+    }
+
+    .panel h2 {
+      margin: 0 0 6px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #999;
+    }
+
+    #mode-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    button {
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      background: #1c1f26;
+      color: #eee;
+      transition: background 0.15s, transform 0.05s, box-shadow 0.1s;
+    }
+
+    button:hover {
+      background: #262a33;
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: 0 0 0;
+    }
+
+    button.small {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+
+    button.mode-active {
+      background: #2a3b4f;
+      color: #cde7ff;
+    }
+
+    #level-list button {
+      width: 100%;
+      text-align: left;
+      margin-bottom: 4px;
+      background: #181818;
+    }
+
+    #level-list button.active {
+      background: #33435a;
+      color: #cde7ff;
+    }
+
+    #customization-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    #color-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    #color-input {
+      width: 70px;
+      height: 22px;
+      padding: 0;
+      border-radius: 4px;
+      border: 1px solid #333;
+      background: #000;
+    }
+
+    #icon-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .icon-option {
+      width: 26px;
+      height: 26px;
+      border-radius: 4px;
+      border: 1px solid #333;
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .icon-option.active {
+      border-color: #9cf;
+      background: #1b2330;
+    }
+
+    #canvas-wrapper {
+      background: #0b0c10;
+      border-radius: 6px;
+      padding: 6px;
+      border: 1px solid #191b22;
+    }
+
+    canvas {
+      background: #1b1d22;
+      display: block;
+      border-radius: 4px;
+    }
+
+    #status {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #888;
+      width: 900px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div id="top-bar">
+    <div id="title">DASH PROJECT</div>
+    <div id="controls">
+      <span><span class="key">Space</span> jump</span>
+      <span>•</span>
+      <span><span class="key">Esc</span> reset level</span>
+      <span>•</span>
+      <span><span class="key">1–4</span> switch main level</span>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="left-panel">
+      <div class="panel">
+        <h2>Mode</h2>
+        <div id="mode-row">
+          <button id="btn-mode-play" class="small mode-active">Play</button>
+          <button id="btn-mode-practice" class="small">Practice</button>
+          <button id="btn-mode-editor" class="small">Editor (soon)</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Main Levels</h2>
+        <div id="level-list"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Player</h2>
+        <div id="customization-row">
+          <div id="color-row">
+            <span>Color</span>
+            <input id="color-input" type="color" value="#00ffff">
+          </div>
+          <div id="icon-row">
+            <span style="font-size:11px;color:#aaa;">Icon</span>
+            <div id="icon-options"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Future</h2>
+        <button id="btn-online" class="small">Online Levels (after core)</button>
+      </div>
+    </div>
+
+    <div id="canvas-wrapper">
+      <canvas id="game" width="800" height="400"></canvas>
+    </div>
+  </div>
+
+  <div id="status">Ready.</div>
+
+  <script>
+    // ==========================
+    // GAME STATE
+    // ==========================
+
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const statusEl = document.getElementById("status");
+    const levelListEl = document.getElementById("level-list");
+    const colorInput = document.getElementById("color-input");
+    const iconOptionsEl = document.getElementById("icon-options");
+
+    const btnModePlay = document.getElementById("btn-mode-play");
+    const btnModePractice = document.getElementById("btn-mode-practice");
+    const btnModeEditor = document.getElementById("btn-mode-editor");
+
+    const modes = {
+      PLAY: "play",
+      PRACTICE: "practice",
+      EDITOR: "editor"
+    };
+
+    let currentMode = modes.PLAY;
+
+    const player = {
+      x: 140,
+      y: 300,
+      size: 28,
+      vy: 0,
+      onGround: false,
+      color: "#00ffff",
+      icon: "cube"
+    };
+
+    const physics = {
+      gravity: 0.75,
+      jumpForce: -12.5,
+      scrollSpeed: 5.2
+    };
+
+    const mainLevels = [
+      {
+        id: "lvl1",
+        name: "Intro Run",
+        difficulty: "Easy",
+        objects: [
+          { type: "platform", x: 0,    y: 350, width: 900 },
+          { type: "spike",    x: 420,  y: 322 },
+          { type: "spike",    x: 460,  y: 322 },
+          { type: "spike",    x: 620,  y: 322 },
+          { type: "platform", x: 950,  y: 320, width: 160 },
+          { type: "spike",    x: 1040, y: 292 }
+        ]
+      },
+      {
+        id: "lvl2",
+        name: "Gap Training",
+        difficulty: "Normal",
+        objects: [
+          { type: "platform", x: 0,    y: 350, width: 600 },
+          { type: "platform", x: 720,  y: 320, width: 140 },
+          { type: "spike",    x: 760,  y: 292 },
+          { type: "spike",    x: 800,  y: 292 },
+          { type: "platform", x: 980,  y: 280, width: 180 },
+          { type: "spike",    x: 1040, y: 252 }
+        ]
+      },
+      {
+        id: "lvl3",
+        name: "Timing Check",
+        difficulty: "Hard",
+        objects: [
+          { type: "platform", x: 0,    y: 350, width: 800 },
+          { type: "spike",    x: 380,  y: 322 },
+          { type: "spike",    x: 420,  y: 322 },
+          { type: "platform", x: 520,  y: 320, width: 120 },
+          { type: "spike",    x: 580,  y: 292 },
+          { type: "platform", x: 720,  y: 300, width: 140 },
+          { type: "spike",    x: 780,  y: 272 }
+        ]
+      },
+      {
+        id: "lvl4",
+        name: "Flow Test",
+        difficulty: "Harder",
+        objects: [
+          { type: "platform", x: 0,    y: 350, width: 500 },
+          { type: "spike",    x: 260,  y: 322 },
+          { type: "spike",    x: 300,  y: 322 },
+          { type: "platform", x: 580,  y: 320, width: 140 },
+          { type: "spike",    x: 620,  y: 292 },
+          { type: "platform", x: 780,  y: 300, width: 160 },
+          { type: "spike",    x: 840,  y: 272 },
+          { type: "platform", x: 980,  y: 280, width: 180 },
+          { type: "spike",    x: 1040, y: 252 }
+        ]
+      }
+    ];
+
+    let currentLevelIndex = 0;
+    let levelObjects = cloneObjects(mainLevels[currentLevelIndex].objects);
+
+    function cloneObjects(objects) {
+      return objects.map(o => ({ ...o }));
+    }
+
+    // ==========================
+    // RENDERING
+    // ==========================
+
+    function drawSpike(obj) {
+      ctx.fillStyle = "#ff4b4b";
+      ctx.beginPath();
+      ctx.moveTo(obj.x, obj.y + 30);
+      ctx.lineTo(obj.x + 15, obj.y);
+      ctx.lineTo(obj.x + 30, obj.y + 30);
+      ctx.fill();
+    }
+
+    function drawPlatform(obj) {
+      ctx.fillStyle = "#f5f5f5";
+      ctx.fillRect(obj.x, obj.y, obj.width, 20);
+    }
+
+    function drawPlayer() {
+      ctx.fillStyle = player.color;
+
+      if (player.icon === "cube") {
+        ctx.fillRect(player.x, player.y, player.size, player.size);
+        ctx.fillStyle = "#111";
+        ctx.fillRect(player.x + 6, player.y + 8, 6, 6);
+      } else if (player.icon === "round") {
+        ctx.beginPath();
+        ctx.arc(
+          player.x + player.size / 2,
+          player.y + player.size / 2,
+          player.size / 2,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        ctx.fillStyle = "#111";
+        ctx.beginPath();
+        ctx.arc(player.x + player.size / 2 - 4, player.y + player.size / 2 - 4, 3, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (player.icon === "diamond") {
+        ctx.beginPath();
+        ctx.moveTo(player.x + player.size / 2, player.y);
+        ctx.lineTo(player.x + player.size, player.y + player.size / 2);
+        ctx.lineTo(player.x + player.size / 2, player.y + player.size);
+        ctx.lineTo(player.x, player.y + player.size / 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "#111";
+        ctx.beginPath();
+        ctx.arc(player.x + player.size / 2, player.y + player.size / 2, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // ==========================
+    // COLLISION
+    // ==========================
+
+    function checkCollision(obj) {
+      if (obj.type === "spike") {
+        const spikeWidth = 30;
+        const spikeHeight = 30;
+
+        const hit =
+          player.x < obj.x + spikeWidth &&
+          player.x + player.size > obj.x &&
+          player.y + player.size > obj.y;
+
+        if (hit) {
+          onDeath();
+        }
+      }
+
+      if (obj.type === "platform") {
+        const withinX =
+          player.x + player.size > obj.x &&
+          player.x < obj.x + obj.width;
+
+        const feet = player.y + player.size;
+        const top = obj.y;
+        const height = 20;
+
+        if (withinX && feet > top && feet < top + height + 6) {
+          player.y = top - player.size;
+          player.vy = 0;
+          player.onGround = true;
+        }
+      }
+    }
+
+    // ==========================
+    // GAME FLOW
+    // ==========================
+
+    function resetLevel() {
+      player.x = 140;
+      player.y = 300;
+      player.vy = 0;
+      player.onGround = false;
+      levelObjects = cloneObjects(mainLevels[currentLevelIndex].objects);
+      const lvl = mainLevels[currentLevelIndex];
+      statusEl.textContent = `Mode: ${currentMode.toUpperCase()} • Playing: ${lvl.name} (${lvl.difficulty})`;
+    }
+
+    function onDeath() {
+      if (currentMode === modes.PRACTICE) {
+        statusEl.textContent = "Practice: death, but staying in flow.";
+        resetLevel();
+      } else {
+        statusEl.textContent = "You died. Resetting...";
+        resetLevel();
+      }
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      player.vy += physics.gravity;
+      player.y += player.vy;
+      player.onGround = false;
+
+      levelObjects.forEach(obj => {
+        obj.x -= physics.scrollSpeed;
+        if (obj.type === "spike") drawSpike(obj);
+        if (obj.type === "platform") drawPlatform(obj);
+        checkCollision(obj);
+      });
+
+      const groundY = 380;
+      if (player.y + player.size > groundY) {
+        player.y = groundY - player.size;
+        player.vy = 0;
+        player.onGround = true;
+      }
+
+      drawPlayer();
+      requestAnimationFrame(gameLoop);
+    }
+
+    // ==========================
+    // UI SETUP
+    // ==========================
+
+    function buildLevelList() {
+      levelListEl.innerHTML = "";
+      mainLevels.forEach((lvl, index) => {
+        const btn = document.createElement("button");
+        btn.textContent = `${index + 1}. ${lvl.name} (${lvl.difficulty})`;
+        if (index === currentLevelIndex) {
+          btn.classList.add("active");
+        }
+        btn.addEventListener("click", () => {
+          currentLevelIndex = index;
+          document
+            .querySelectorAll("#level-list button")
+            .forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          resetLevel();
+        });
+        levelListEl.appendChild(btn);
+      });
+    }
+
+    function initCustomization() {
+      const savedColor = localStorage.getItem("dash_player_color");
+      const savedIcon = localStorage.getItem("dash_player_icon");
+
+      if (savedColor) {
+        player.color = savedColor;
+        colorInput.value = savedColor;
+      }
+
+      if (savedIcon) {
+        player.icon = savedIcon;
+      }
+
+      colorInput.addEventListener("input", () => {
+        player.color = colorInput.value;
+        localStorage.setItem("dash_player_color", player.color);
+      });
+
+      const icons = [
+        { id: "cube", label: "■" },
+        { id: "round", label: "●" },
+        { id: "diamond", label: "◆" }
+      ];
+
+      iconOptionsEl.innerHTML = "";
+      icons.forEach(icon => {
+        const div = document.createElement("div");
+        div.className = "icon-option";
+        div.textContent = icon.label;
+        if (icon.id === player.icon) {
+          div.classList.add("active");
+        }
+        div.addEventListener("click", () => {
+          player.icon = icon.id;
+          localStorage.setItem("dash_player_icon", player.icon);
+          document
+            .querySelectorAll(".icon-option")
+            .forEach(el => el.classList.remove("active"));
+          div.classList.add("active");
+        });
+        iconOptionsEl.appendChild(div);
+      });
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      btnModePlay.classList.remove("mode-active");
+      btnModePractice.classList.remove("mode-active");
+      btnModeEditor.classList.remove("mode-active");
+
+      if (mode === modes.PLAY) btnModePlay.classList.add("mode-active");
+      if (mode === modes.PRACTICE) btnModePractice.classList.add("mode-active");
+      if (mode === modes.EDITOR) btnModeEditor.classList.add("mode-active");
+
+      if (mode === modes.EDITOR) {
+        statusEl.textContent = "Editor mode will use the same level format. We’ll wire it up next.";
+      } else {
+        resetLevel();
+      }
+    }
+
+    // ==========================
+    // INPUT
+    // ==========================
+
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space") {
+        if (player.onGround) {
+          player.vy = physics.jumpForce;
+        }
+      }
+      if (e.code === "Escape") {
+        resetLevel();
+      }
+      if (e.code === "Digit1") {
+        currentLevelIndex = 0;
+        buildLevelList();
+        resetLevel();
+      }
+      if (e.code === "Digit2") {
+        currentLevelIndex = 1;
+        buildLevelList();
+        resetLevel();
+      }
+      if (e.code === "Digit3") {
+        currentLevelIndex = 2;
+        buildLevelList();
+        resetLevel();
+      }
+      if (e.code === "Digit4") {
+        currentLevelIndex = 3;
+        buildLevelList();
+        resetLevel();
+      }
+    });
+
+    btnModePlay.addEventListener("click", () => setMode(modes.PLAY));
+    btnModePractice.addEventListener("click", () => setMode(modes.PRACTICE));
+    btnModeEditor.addEventListener("click", () => setMode(modes.EDITOR));
+
+    // ==========================
+    // INIT
+    // ==========================
+
+    buildLevelList();
+    initCustomization();
+    resetLevel();
+    gameLoop();
+  </script>
+</body>
+</html>
